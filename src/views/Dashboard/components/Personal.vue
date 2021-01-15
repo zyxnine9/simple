@@ -16,13 +16,16 @@
           <el-input v-model="user.mobile" :disabled="true"></el-input>
         </el-form-item>
         <el-form-item label="身份证号码">
-          <el-input v-model="idCard"></el-input>
+          <el-input
+            v-model="user.idCard"
+            :disabled="user.idCard ? true : false"
+          ></el-input>
         </el-form-item>
         <!-- <el-form-item label="原因说明">
           <el-input type="textarea" v-model="reason"></el-input>
         </el-form-item> -->
         <el-form-item label="本人承诺" prop="type">
-          <el-checkbox-group style="text-align:left" v-model="type">
+          <el-checkbox-group style="text-align: left" v-model="type">
             <el-checkbox
               label="不对外宣传和公开学术外联及 APP 相关事宜。"
               name="type"
@@ -55,11 +58,11 @@
               label="不利用学术外联 APP 进行破坏国家宗教政策，宣扬邪教和封建迷信。"
               name="type"
             ></el-checkbox>
-             <el-checkbox
+            <el-checkbox
               label="不利用学术外联 APP 制作、复制、查阅和传播法律、行政法规禁止的内容。"
               name="type"
             ></el-checkbox>
-             <el-checkbox
+            <el-checkbox
               label="自觉健康上网、文明上网。"
               name="type"
             ></el-checkbox>
@@ -73,26 +76,65 @@
 </template>
 
 <script>
-
+import request from "@/utils/request";
 
 export default {
-
   data() {
     return {
-      idCard: "",
       type: [],
-      user:{
-        company:"范德萨",
-        mobile:12321,
-        career:"学术",
-        username:"张三"
-      }
+      submitable: true,
+      user: {
+        company: "范德萨",
+        mobile: 12321,
+        career: "学术",
+        username: "张三",
+        idCard: "",
+      },
     };
   },
 
-  methods:{
-  
-  }
+  methods: {
+    getUserInfo() {
+      request({
+        url: "/api/GetUserInfo/",
+        method: "get",
+      })
+        .then((res) => {
+          console.log(res);
+          this.user = res.data;
+          if (res.data.idCard) {
+            this.submitable = false;
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    },
+    submit() {
+      const data = {
+        workOrderType: "1",
+        idCard: this.idCard,
+      };
+      if (this.submitable) {
+        request({
+          url: "/api/CreateWorkOrder/",
+          method: "post",
+          data: data,
+        })
+          .then((res) => {
+            console.log(res);
+          })
+          .catch((error) => {
+            console.log(error);
+          });
+      }else{
+        alert("不能重复提交")
+      }
+    },
+  },
+  created() {
+    this.getUserInfo();
+  },
 };
 </script>
 

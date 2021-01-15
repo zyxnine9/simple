@@ -2,8 +2,9 @@ import Vue from 'vue'
 import App from './App.vue'
 import router from './router'
 import 'element-ui/lib/theme-chalk/index.css'
+import VueCookies from 'vue-cookies'
 import "./assets/reset.css"
-import {  
+import {
   Form,
   FormItem,
   Button,
@@ -20,12 +21,15 @@ import {
   DropdownItem,
   Main,
   Table,
+  Tag,
   TableColumn,
   Checkbox,
   CheckboxButton,
   CheckboxGroup,
+  Loading
 } from 'element-ui'
 
+Vue.use(Loading.directive);
 Vue.use(Checkbox);
 Vue.use(CheckboxButton);
 Vue.use(CheckboxGroup);
@@ -34,6 +38,7 @@ Vue.use(FormItem)
 Vue.use(Button)
 Vue.use(Input)
 Vue.use(Menu)
+Vue.use(Tag);
 Vue.use(Submenu)
 Vue.use(MenuItem)
 Vue.use(MenuItemGroup)
@@ -47,6 +52,8 @@ Vue.use(DropdownItem)
 Vue.use(Table);
 Vue.use(TableColumn);
 
+
+Vue.use(VueCookies)
 
 Vue.config.productionTip = false
 

@@ -17,9 +17,9 @@
         <el-form-item label="密码">
           <el-input v-model="loginForm.password" show-password />
         </el-form-item>
-        <el-form-item label="验证码">
+        <!-- <el-form-item label="验证码">
           <el-input v-model="loginForm.vertifyCode" clearable />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-button type="primary" @click="login">登录</el-button>
         <el-button @click="register">注册</el-button>
@@ -28,7 +28,11 @@
   </div>
 </template>
 
+
 <script>
+import Vue from "vue"
+import axios from "axios"
+import { setToken } from "@/utils/auth"
 export default {
   name: "",
   data() {
@@ -52,7 +56,19 @@ export default {
   },
   methods: {
     login() {
-      this.$router.push("/dashboard");
+      const fd = new FormData()
+      fd.append("username", this.loginForm.mobile);
+      fd.append("password", this.loginForm.password)
+      axios.post('http://192.168.203.66:20002/get_token', fd)
+      .then(res=>{
+        Vue.$cookies.set("username",res.data.username,"3d")
+        setToken(res.data.token)
+        this.$router.push("/dashboard");
+      })
+      .catch(error=>{
+        console.log(error)
+      })
+      
     },
 
     register() {

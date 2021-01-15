@@ -7,9 +7,9 @@
             >个人</el-menu-item
           >
           <el-menu-item @click="to('/dashboard/verify')" index="1-2"
-            >审核</el-menu-item
+            >个人信用等级</el-menu-item
           >
-          <el-menu-item @click="to('/dashboard/visithistory')" index="1-2"
+          <el-menu-item @click="to('/dashboard/visithistory')" index="1-3"
             >访问记录</el-menu-item
           >
         </el-menu>
@@ -17,15 +17,8 @@
 
       <el-container>
         <el-header style="text-align: right; font-size: 12px">
-          <el-dropdown>
-            <i class="el-icon-setting" style="margin-right: 15px"></i>
-            <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>查看</el-dropdown-item>
-              <el-dropdown-item>新增</el-dropdown-item>
-              <el-dropdown-item>删除</el-dropdown-item>
-            </el-dropdown-menu>
-          </el-dropdown>
-          <span>王小虎</span>
+          
+          <span>{{name}}</span>
         </el-header>
         <router-view class="i-main" />
       </el-container>
@@ -36,10 +29,11 @@
 
 <script>
 // import NavBar from "./components/NavBar";
+import Vue from "vue"
 export default {
-  // components: {
-  //   "nav-bar": NavBar,
-  // },
+  created(){
+    this.name = Vue.$cookies.get("username")
+  },
   methods: {
     to(url) {
       this.$router.push(url);
