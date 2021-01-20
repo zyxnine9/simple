@@ -1,3 +1,5 @@
+const timestamp = new Date().getTime()
+
 module.exports = {
     assetsDir: "./",
     publicPath: process.env.NODE_ENV === 'production'
@@ -23,7 +25,10 @@ module.exports = {
             },
         }
     },
-
-
-
+    configureWebpack: {
+        output: {
+            filename: `./js/[name].${timestamp}.js`,
+            chunkFilename: `./js/[name].${timestamp}.js`,
+        }
+    }
 }

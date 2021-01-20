@@ -11,18 +11,38 @@
         label-width="80px"
         label-position="left"
       >
-        <el-form-item label="用户名">
-          <el-input v-model="loginForm.mobile" clearable />
+        <el-form-item label="手机号">
+          <el-input
+            v-model="loginForm.mobile"
+            placeholder="请输入手机号"
+            clearable
+          />
         </el-form-item>
-        <el-form-item label="密码">
-          <el-input v-model="loginForm.password" show-password />
+        <el-form-item label="验证码">
+          <div style="display: flex; flex-direction: row">
+            <el-input
+              v-model="loginForm.vertifyCode"
+              placeholder="请输入验证码"
+              clearable
+            />
+            <el-button
+              class="btn"
+              style="margin: 0 0 0 8px"
+              @click="getCode"
+              :disabled="!show"
+              type="primary"
+            >
+              <span class="code-span" v-show="show">获取验证码</span>
+              <span class="code-span" v-show="!show"> {{ count }} s后重试</span>
+            </el-button>
+          </div>
         </el-form-item>
-        <!-- <el-form-item label="验证码">
-          <el-input v-model="loginForm.vertifyCode" clearable />
-        </el-form-item> -->
 
-        <el-button type="primary" @click="login">登录</el-button>
-        <el-button @click="register">注册</el-button>
+        <div class="btn-group">
+          <el-button class="login-btn" type="primary" @click="login"
+            >登录</el-button
+          >
+        </div>
       </el-form>
     </div>
   </div>
@@ -30,9 +50,11 @@
 
 
 <script>
-import Vue from "vue"
-import axios from "axios"
-import { setToken } from "@/utils/auth"
+import axios from "axios";
+import request from "@/utils/request";
+import { Message } from "element-ui";
+// import Vue from "vue";
+import { setToken } from "@/utils/auth";
 export default {
   name: "",
   data() {
@@ -43,6 +65,9 @@ export default {
         password: "",
         vertifyCode: "",
       },
+      show: true, //获取验证码和倒计时切换
+      count: "", //数量
+      timer: null, //时间
     };
   },
   computed: {
@@ -56,23 +81,79 @@ export default {
   },
   methods: {
     login() {
-      const fd = new FormData()
-      fd.append("username", this.loginForm.mobile);
-      fd.append("password", this.loginForm.password)
-      axios.post('http://192.168.203.66:20002/get_token', fd)
-      .then(res=>{
-        Vue.$cookies.set("username",res.data.username,"3d")
-        setToken(res.data.token)
-        this.$router.push("/dashboard");
-      })
-      .catch(error=>{
-        console.log(error)
-      })
-      
+      const fd = new FormData();
+      fd.append("mobile", this.loginForm.mobile);
+      fd.append("code", this.loginForm.vertifyCode);
+      axios
+        .post("/api/SMSLogin/", fd)
+        .then((res) => {
+          console.log(res);
+          this.$cookies.remove("user");
+          setToken(res.data);
+          this.$router.push("/dashboard");
+        })
+        .catch(() => {
+          Message({
+            type: "warning",
+            message: "登录失败",
+          });
+        });
     },
 
-    register() {
-      console.log("register");
+    removeAllCookies() {
+      for (const key of this.$cookies.keys()) {
+        this.$cookies.remove(key);
+      }
+    },
+
+    getCode() {
+      if (this.loginForm.mobile !== null && this.loginForm.mobile !== "") {
+        this, this.removeAllCookies();
+        const TIME_COUNT = 60;
+        if (!this.timer) {
+          this.count = TIME_COUNT;
+          this.show = false;
+          this.timer = setInterval(() => {
+            if (this.count > 0 && this.count <= TIME_COUNT) {
+              this.count--;
+            } else {
+              this.show = true;
+              clearInterval(this.timer);
+              this.timer = null;
+            }
+          }, 1000);
+          const datas = {
+            mobile: this.loginForm.mobile,
+            type: "CreateUser",
+          };
+          request
+            .post("/api/SendSms/", datas)
+            .then((res) => {
+              // console.log(res);
+              const responseCode = res.status;
+              if (responseCode == 200) {
+                Message({
+                  message: "验证码已发送",
+                  type: "success",
+                  showClose: true,
+                });
+              }
+            })
+            .catch((error) => {
+              console.log(error);
+              Message({
+                message: "验证码发送失败",
+                type: "warning",
+                showClose: true,
+              });
+            });
+        }
+      } else {
+        Message({
+          type: "warning",
+          message: "手机号格式错误",
+        });
+      }
     },
     choseType(value) {
       this.type = value;
@@ -98,6 +179,13 @@ export default {
     &:hover {
       cursor: pointer;
     }
+  }
+}
+.btn-group {
+  text-align: center;
+  .login-btn {
+    width: 40%;
+    margin: 0 16px;
   }
 }
 </style>

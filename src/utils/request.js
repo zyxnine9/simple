@@ -2,14 +2,19 @@ import axios from 'axios'
 import { getToken } from "./auth"
 
 const instance = axios.create({
-    baseURL: process.env.VUE_APP_BASE_API,
-    timeout: 5000,
+    baseURL: "http://192.168.203.66:20002",
+    timeout: 20000,
 })
 
 
 // 拦截 请求
 instance.interceptors.request.use(config => {
     const isToken = (config.headers || {}).isToken === false;
+   if(process.env.NODE_ENV === "production"){
+        const pref = config.url.split("/")[1]
+        if (pref === "api")  config.baseURL = "http://health.pcl.ac.cn/"
+        else if (pref === "get_token") config.baseURL = "http://health.pcl.ac.cn/"
+    }
     if (getToken() && !isToken) {
         config.headers['Authorization'] = 'Token ' + getToken()
     }

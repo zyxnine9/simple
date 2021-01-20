@@ -3,24 +3,23 @@
     <el-container class="page" style="border: 1px solid #eee">
       <el-aside width="200px" style="background-color: rgb(238, 241, 246)">
         <el-menu :default-openeds="['1', '3']">
-          <el-menu-item @click="to('/dashboard/personal')" index="1-1"
-            >个人</el-menu-item
-          >
+          <el-menu-item @click="to('/dashboard/personal')" index="1-1">{{
+            title
+          }}</el-menu-item>
           <el-menu-item @click="to('/dashboard/verify')" index="1-2"
-            >个人信用等级</el-menu-item
+            >信用等级</el-menu-item
           >
           <el-menu-item @click="to('/dashboard/visithistory')" index="1-3"
-            >访问记录</el-menu-item
+            >审核进度</el-menu-item
           >
         </el-menu>
       </el-aside>
 
       <el-container>
         <el-header style="text-align: right; font-size: 12px">
-          
-          <span>{{name}}</span>
+          <span>{{ name }}</span>
         </el-header>
-        <router-view class="i-main" />
+        <router-view v-on:setTitle="setTitle" class="i-main" />
       </el-container>
     </el-container>
   </div>
@@ -29,14 +28,47 @@
 
 <script>
 // import NavBar from "./components/NavBar";
-import Vue from "vue"
 export default {
-  created(){
-    this.name = Vue.$cookies.get("username")
+  data() {
+    return {
+      title: "个人申请",
+      name: "",
+    };
+  },
+  mounted() {
+    try {
+      this.name = this.$cookies.get("user").username
+        ? this.$cookies.get("user").username
+        : null;
+    } catch (error) {
+      this.name = "";
+    }
+    try {
+      console.log((this.title = this.$cookies.get("user").idCard));
+      this.title = this.$cookies.get("user").idCard ? "个人信息" : "个人申请";
+    } catch (error) {
+      this.title = "个人申请";
+    }
+    console.log(this.title);
   },
   methods: {
     to(url) {
       this.$router.push(url);
+    },
+    setTitle() {
+      try {
+        this.name = this.$cookies.get("user").username
+          ? this.$cookies.get("user").username
+          : null;
+      } catch (error) {
+        this.name = "";
+      }
+
+      try {
+        this.title = this.$cookies.get("user").idCard ? "个人信息" : "个人申请";
+      } catch (error) {
+        this.title = "个人申请";
+      }
     },
   },
 };

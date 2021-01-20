@@ -8,6 +8,8 @@ import {
   Form,
   FormItem,
   Button,
+  Alert,
+  Switch,
   Input,
   Container,
   Menu,
@@ -45,12 +47,14 @@ Vue.use(MenuItemGroup)
 Vue.use(Container)
 Vue.use(Header)
 Vue.use(Aside)
+Vue.use(Switch)
 Vue.use(Main)
 Vue.use(Dropdown);
 Vue.use(DropdownMenu)
 Vue.use(DropdownItem)
 Vue.use(Table);
 Vue.use(TableColumn);
+Vue.use(Alert);
 
 
 Vue.use(VueCookies)

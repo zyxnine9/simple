@@ -1,10 +1,5 @@
 <template>
   <div class="app-container">
-    <div class="btn-group">
-      <el-button type="primary">创建</el-button>
-      <el-button type="warning">删除</el-button>
-    </div>
-
     <div>
       <el-table
         v-loading="listLoading"
@@ -14,54 +9,21 @@
         fit
         highlight-current-row
       >
-        <el-table-column align="center" label="index" width="95">
+        <el-table-column align="center" label="序号" width="110">
           <template slot-scope="scope">
             {{ scope.$index }}
           </template>
         </el-table-column>
-        <el-table-column label="manager">
-          <template slot-scope="scope">
-            {{ scope.row.manager }}
-          </template>
-        </el-table-column>
-        <el-table-column label="status" width="110" align="center">
-          <template slot-scope="scope">
-            <span>{{ scope.row.status }}</span>
-          </template>
-        </el-table-column>
 
-        <el-table-column
-          class-name="status-col"
-          label="comment"
-          width="110"
-          align="center"
-        >
+        <el-table-column label="状态" align="center">
           <template slot-scope="scope">
-            <el-tag :type="scope.row.comment | statusFilter">{{
-              scope.row.comment
-            }}</el-tag>
+            <span>{{ scope.row.comment }}</span>
           </template>
         </el-table-column>
-        <el-table-column
-          align="center"
-          prop="created_at"
-          label="createTime"
-          width="200"
-        >
+        <el-table-column align="center" prop="created_at" label="更新时间">
           <template slot-scope="scope">
-            <i class="el-icon-time" />
-            <span>{{ scope.row.createTime }}</span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          align="center"
-          prop="created_at"
-          label="updateTime"
-          width="200"
-        >
-          <template slot-scope="scope">
-            <i class="el-icon-time" />
-            <span>{{ scope.row.updateTime }}</span>
+            <i v-if="scope.row.updateTime" class="el-icon-time" />
+            <span>{{ getDayFormat(scope.row.updateTime) }}</span>
           </template>
         </el-table-column>
       </el-table>
@@ -89,13 +51,33 @@ export default {
     };
   },
   methods: {
+    getDayFormat(Unformatdate) {
+      if (Unformatdate == null) return null;
+      // const current = new Date()
+      const time = new Date(Unformatdate);
+      const year = time.getFullYear();
+      const month = "0" + (time.getMonth() + 1);
+      const day = "0" + (time.getDate() + 1);
+      // const hour = time.getHours();
+      // const minute = time.getMinutes();
+
+      return `${year}年${month.substr(-2)}月${day.substr(-2)}日`;
+    },
     getHistory() {
       request({
-        url: "/api/QueryWorkOrder/1/",
+        url: "/api/QueryWorkOrder/",
         method: "get",
       })
         .then((res) => {
-          console.log(res.data);
+          return res.data.pop().id;
+        })
+        .then((id) => {
+          return request({
+            url: "/api/QueryWorkOrder/" + id + "/",
+            method: "get",
+          });
+        })
+        .then((res) => {
           this.list = res.data.workOrderFlow;
         })
         .catch((error) => {
