@@ -34,12 +34,36 @@
             :disabled="!submitable"
           ></el-input>
         </el-form-item>
+        <div class="id-card">
+          <input
+            style="display: none"
+            type="file"
+            @change="onFileSelectedFront"
+            ref="uploadFront"
+          />
+          <input
+            style="display: none"
+            type="file"
+            @change="onFileSelectedBack"
+            ref="uploadBack"
+          />
+          <div class="id-card">
+            <img
+              ref="front"
+              title="身份证正面"
+              alt="身份证正面"
+              @click="$refs.uploadFront.click()"
+            />
+            <img
+              ref="back"
+              title="身份证背面"
+              alt="身份证背面"
+              @click="$refs.uploadBack.click()"
+            />
+          </div>
+        </div>
         <el-form-item v-if="submitable" label="本人承诺" prop="type">
-          <el-switch
-            v-model="all"
-            active-text="完成承诺"
-          >
-          </el-switch>
+          <el-switch v-model="all" active-text="完成承诺"> </el-switch>
           <el-checkbox-group style="text-align: left" v-model="type">
             <el-checkbox
               label="不对外宣传和公开学术外联及 APP 相关事宜。"
@@ -102,7 +126,7 @@
 
 <script>
 import request from "@/utils/request";
-
+import { Message } from "element-ui";
 export default {
   data() {
     return {
@@ -110,6 +134,9 @@ export default {
       all: false,
       submitable: true,
       time: "",
+
+      idCardFront: null,
+      idCardBack: null,
       user: {
         organization_topLevel: "",
         organization_secondLevel: "",
@@ -122,11 +149,47 @@ export default {
       usernameEditable: true,
     };
   },
-
-  /**
-
- */
   methods: {
+    onFileSelectedFront(event) {
+      if (event.target.files[0]) {
+        this.idCardFront = event.target.files[0];
+      }
+      const reader = new FileReader();
+      let format = this.idCardFront.name.split(".");
+
+      reader.onload = () => {
+        this.$refs.front.src = reader.result
+      };
+      reader.readAsDataURL(this.idCardFront);
+      format = format[format.length - 1];
+      if (format != "png" && format != "jpg" && format != "jpeg") {
+        this.idCardFront = null;
+        Message({
+          type: "warning",
+          message: "请身份证正面图片",
+        });
+      }
+    },
+    onFileSelectedBack(event) {
+      if (event.target.files[0]) {
+        this.idCardBack = event.target.files[0];
+      }
+      const reader = new FileReader();
+      let format = this.idCardBack.name.split(".");
+
+      reader.onload = () => {
+        this.$refs.back.src = reader.result;
+      };
+      reader.readAsDataURL(this.idCardBack);
+      format = format[format.length - 1];
+      if (format != "png" && format != "jpg" && format != "jpeg") {
+        this.idCardBack = null;
+        Message({
+          type: "warning",
+          message: "请身份证背面图片",
+        });
+      }
+    },
     getUserInfo() {
       request({
         url: "/api/GetUserInfo/",
@@ -134,28 +197,43 @@ export default {
       })
         .then((res) => {
           this.user = res.data;
-
+          console.log(res.data)
           this.$cookies.set("user", res.data, "1h");
           this.$emit("setTitle");
           if (res.data.idCard) {
             this.submitable = false;
+            this.$refs.front.src = res.data.idCardImg_1
+            this.$refs.back.src = res.data.idCardImg_2
           }
+
         })
         .catch((error) => {
           console.log(error);
         });
     },
     async submit() {
-      const data = {
-        workOrderType: "1",
-        idCard: this.user.idCard,
-        username: this.user.username,
-        career: this.user.career,
-        organization_name: this.user.organization_topLevel,
-        organization_topLevel: this.user.organization_topLevel,
-        organization_secondLevel: this.user.organization_secondLevel,
-        note: this.user.note,
-      };
+      // const data = {
+      //   workOrderType: "1",
+      //   idCard: this.user.idCard,
+      //   username: this.user.username,
+      //   career: this.user.career,
+      //   organization_name: this.user.organization_topLevel,
+      //   organization_topLevel: this.user.organization_topLevel,
+      //   organization_secondLevel: this.user.organization_secondLevel,
+      //   note: this.user.note,
+      // };
+      const fd = new FormData();
+      fd.append("workOrderType", 1);
+      fd.append("idCard", this.user.idCard);
+      fd.append("username", this.user.username);
+      fd.append("career", this.user.career);
+      fd.append("organization_name", this.user.organization_topLevel);
+      fd.append("organization_topLevel", this.user.organization_topLevel);
+      fd.append("organization_secondLevel", this.user.organization_secondLevel);
+      fd.append("note", this.user.note);
+      fd.append("idCardImg_1", this.idCardFront);
+      fd.append("idCardImg_2", this.idCardBack);
+
       if (this.type.length < 10) {
         alert("请勾选所有的承诺");
         return;
@@ -164,11 +242,19 @@ export default {
         alert("请填写身份证号码");
         return;
       }
+      if (!this.idCardFront) {
+        alert("请提交身份证正面图片");
+        return;
+      }
+      if (!this.idCardBack) {
+        alert("请提交身份证背面图片");
+        return;
+      }
       if (this.submitable) {
         await request({
           url: "/api/CreateWorkOrder/",
           method: "post",
-          data: data,
+          data: fd,
         })
           .then(() => {
             this.getUserInfo();
@@ -248,6 +334,22 @@ export default {
     justify-content: space-between;
     .form-label {
       width: 100px;
+    }
+  }
+}
+.id-card {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: 100%;
+  img {
+    margin: 20px;
+    display: block;
+    height: 200px;
+    width: 350px;
+    border-radius: 8px;
+    &:hover {
+      cursor: pointer;
     }
   }
 }

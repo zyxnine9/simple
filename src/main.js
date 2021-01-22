@@ -8,6 +8,8 @@ import {
   Form,
   FormItem,
   Button,
+  Upload,
+  Dialog,
   Alert,
   Switch,
   Input,
@@ -40,6 +42,8 @@ Vue.use(FormItem)
 Vue.use(Button)
 Vue.use(Input)
 Vue.use(Menu)
+Vue.use(Upload);
+Vue.use(Dialog);
 Vue.use(Tag);
 Vue.use(Submenu)
 Vue.use(MenuItem)

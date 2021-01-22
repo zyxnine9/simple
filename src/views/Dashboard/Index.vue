@@ -44,12 +44,10 @@ export default {
       this.name = "";
     }
     try {
-      console.log((this.title = this.$cookies.get("user").idCard));
       this.title = this.$cookies.get("user").idCard ? "个人信息" : "个人申请";
     } catch (error) {
       this.title = "个人申请";
     }
-    console.log(this.title);
   },
   methods: {
     to(url) {
